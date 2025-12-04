@@ -211,7 +211,7 @@ export class GeminiLiveService {
 
       this.sessionPromise?.then((session) => {
         session.sendRealtimeInput({ media: pcmBlob });
-      }).catch(e => {
+      }).catch(() => {
       });
     };
 

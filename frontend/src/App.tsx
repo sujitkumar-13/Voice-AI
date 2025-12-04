@@ -4,7 +4,7 @@ import * as BookingService from './services/bookingService';
 import BookingCard from './components/BookingCard';
 import Visualizer from './components/Visualizer';
 import { Booking, BookingStatus, ChatMessage } from './types';
-import { UtensilsCrossed, Mic, MicOff, RefreshCw, Calendar, ChefHat, X, PhoneOff, AlertCircle } from 'lucide-react';
+import { UtensilsCrossed, Mic, MicOff, RefreshCw, Calendar, ChefHat, PhoneOff, AlertCircle } from 'lucide-react';
 
 const App: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -43,7 +43,7 @@ const App: React.FC = () => {
         setIsConnected(false);
     };
     
-    liveService.onMessageUpdate = (text, isUser, isFinal) => {
+    liveService.onMessageUpdate = (text, isUser) => {
         if (!text) return;
 
         setMessages(prev => {
