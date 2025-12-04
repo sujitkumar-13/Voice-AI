@@ -1,6 +1,6 @@
 import { Booking, CreateBookingArgs, BookingStatus } from '../types';
 
-const API_URL = 'http://127.0.0.1:5000/api';
+const API_URL = 'https://voiceai-api.vercel.app/api';
 const STORAGE_KEY = 'golden_table_bookings';
 
 const RESTAURANT_CITY = 'India';
