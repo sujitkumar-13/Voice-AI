@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const BookingSchema = new mongoose.Schema({
   bookingId: { type: String, required: true, unique: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   customerName: { type: String, required: true },
   numberOfGuests: { type: Number, required: true },
   bookingDate: { type: String, required: true }, // ISO Date String YYYY-MM-DD

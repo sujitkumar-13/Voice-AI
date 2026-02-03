@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  html, body {
+    @apply h-full overflow-hidden;
+  }
+}
+
 /* Custom Scrollbar for dark theme */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;

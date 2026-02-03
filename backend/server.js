@@ -4,8 +4,13 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const Booking = require('./models/Booking');
 
+const jwt = require('jsonwebtoken');
+const User = require('./models/User');
+const auth = require('./middleware/authMiddleware');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
+const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 
 // Middleware
 app.use(cors());
@@ -16,26 +21,79 @@ mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log('MongoDB Connected to Atlas'))
-.catch(err => console.error('MongoDB Connection Error:', err));
+  .then(() => console.log('MongoDB Connected to Atlas'))
+  .catch(err => console.error('MongoDB Connection Error:', err));
 
-// GET all bookings
-app.get('/api/bookings', async (req, res) => {
+// Auth Routes
+app.post('/api/auth/register', async (req, res) => {
   try {
-    const bookings = await Booking.find().sort({ createdAt: -1 });
+    const { name, email, password } = req.body;
+    let user = await User.findOne({ email });
+    if (user) return res.status(400).json({ error: 'User already exists' });
+
+    user = new User({ name, email, password });
+    await user.save();
+
+    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+    res.status(201).json({ token, user: { id: user._id, name: user.name, email: user.email } });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ error: 'Invalid credentials' });
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
+
+    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+    res.json({ token, user: { id: user._id, name: user.name, email: user.email } });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET user info
+app.get('/api/auth/me', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET user bookings (Protected)
+app.get('/api/bookings', auth, async (req, res) => {
+  try {
+    const bookings = await Booking.find({ user: req.user.id }).sort({ createdAt: -1 });
     res.json(bookings);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// POST create a booking
-app.post('/api/bookings', async (req, res) => {
+// POST create a booking (Protected)
+app.post('/api/bookings', auth, async (req, res) => {
   try {
     const bookingId = `#BK-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
 
+    const { bookingDate } = req.body;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selectedDate = new Date(bookingDate);
+
+    if (selectedDate < today) {
+      return res.status(400).json({ error: 'Cannot book for a past date' });
+    }
+
     const newBooking = new Booking({
       bookingId,
+      user: req.user.id,
       ...req.body,
       status: 'Confirmed',
       createdAt: new Date()
@@ -48,12 +106,12 @@ app.post('/api/bookings', async (req, res) => {
   }
 });
 
-// DELETE (Cancel) a booking
-app.delete('/api/bookings/:id', async (req, res) => {
+// DELETE (Cancel) a booking (Protected)
+app.delete('/api/bookings/:id', auth, async (req, res) => {
   try {
     const bookingId = req.params.id;
 
-    const booking = await Booking.findOne({ bookingId: bookingId });
+    const booking = await Booking.findOne({ bookingId: bookingId, user: req.user.id });
     if (!booking) {
       return res.status(404).json({ error: 'Booking not found' });
     }

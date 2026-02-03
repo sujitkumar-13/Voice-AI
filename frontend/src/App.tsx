@@ -1,12 +1,16 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { liveService } from './services/geminiLive';
 import * as BookingService from './services/bookingService';
 import BookingCard from './components/BookingCard';
 import Visualizer from './components/Visualizer';
 import { Booking, BookingStatus, ChatMessage } from './types';
-import { UtensilsCrossed, Mic, MicOff, RefreshCw, Calendar, ChefHat, PhoneOff, AlertCircle } from 'lucide-react';
+import { useAuth } from './context/AuthContext';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import { UtensilsCrossed, Mic, MicOff, RefreshCw, Calendar, PhoneOff, AlertCircle, LogOut, Loader2 } from 'lucide-react';
 
-const App: React.FC = () => {
+const MainApp: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -14,59 +18,60 @@ const App: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { user, logout } = useAuth();
 
   const fetchBookings = async () => {
     try {
-        const data = await BookingService.getBookings();
-        setBookings(data);
+      const data = await BookingService.getBookings();
+      setBookings(data);
     } catch (e) {
-        console.error("Failed to load bookings", e);
+      console.error("Failed to load bookings", e);
     }
   };
 
   useEffect(() => {
     fetchBookings();
-    
+
     setMessages([]);
 
     liveService.onConnectionStateChange = (connected) => {
-        setIsConnected(connected);
-        if (connected) {
-            setIsMuted(false); 
-            setErrorMsg(null);
-        }
+      setIsConnected(connected);
+      if (connected) {
+        setIsMuted(false);
+        setErrorMsg(null);
+      }
     };
     liveService.onVolumeLevel = (vol) => setVolume(vol);
     liveService.onNewBooking = fetchBookings;
     liveService.onError = (msg) => {
-        setErrorMsg(msg);
-        setIsConnected(false);
+      setErrorMsg(msg);
+      setIsConnected(false);
     };
-    
+
     liveService.onMessageUpdate = (text, isUser) => {
-        if (!text) return;
+      if (!text) return;
 
-        setMessages(prev => {
-            const lastMsg = prev[prev.length - 1];
-            const newRole = isUser ? 'user' : 'assistant';
+      setMessages(prev => {
+        const lastMsg = prev[prev.length - 1];
+        const newRole = isUser ? 'user' : 'assistant';
 
-            if (lastMsg && lastMsg.role === newRole) {
-                 const updated = [...prev];
-                 updated[updated.length - 1] = {
-                     ...lastMsg,
-                     text: text
-                 };
-                 return updated;
-            }
+        if (lastMsg && lastMsg.role === newRole) {
+          const updated = [...prev];
+          updated[updated.length - 1] = {
+            ...lastMsg,
+            text: text
+          };
+          return updated;
+        }
 
-            const newMsg: ChatMessage = {
-                id: Date.now().toString(),
-                role: newRole,
-                text: text,
-                timestamp: new Date()
-            };
-            return [...prev, newMsg];
-        });
+        const newMsg: ChatMessage = {
+          id: Date.now().toString(),
+          role: newRole,
+          text: text,
+          timestamp: new Date()
+        };
+        return [...prev, newMsg];
+      });
     };
 
     return () => {
@@ -99,9 +104,9 @@ const App: React.FC = () => {
   };
 
   const handleDisconnect = () => {
-      liveService.disconnect();
-      setIsConnected(false);
-      setIsMuted(false);
+    liveService.disconnect();
+    setIsConnected(false);
+    setIsMuted(false);
   };
 
   // Filter based on status string (matches DB schema)
@@ -109,7 +114,7 @@ const App: React.FC = () => {
   const pastBookings = bookings.filter(b => b.status !== BookingStatus.CONFIRMED);
 
   return (
-    <div className="min-h-screen flex flex-col font-sans bg-[#0c0a09] text-stone-200">
+    <div className="h-screen flex flex-col font-sans bg-[#0c0a09] text-stone-200 overflow-hidden">
       {/* Header */}
       <header className="h-20 border-b border-[#2a2725] bg-[#0c0a09] flex items-center justify-between px-8 sticky top-0 z-20">
         <div className="flex items-center gap-4">
@@ -121,51 +126,63 @@ const App: React.FC = () => {
             <p className="text-[11px] text-stone-500 uppercase tracking-widest">Voice-Enabled Booking Assistant</p>
           </div>
         </div>
-        <div className="hidden md:flex items-center gap-2 text-stone-500 text-xs border border-stone-800 px-3 py-1.5 rounded-full">
-          <ChefHat size={14} />
-          <span>Fine Dining Experience</span>
+
+        <div className="flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-2 text-stone-400 text-xs bg-stone-900/50 border border-stone-800 px-4 py-2 rounded-full">
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+            <span>Welcome, {user?.name}</span>
+          </div>
+
+          <button
+            onClick={logout}
+            className="flex items-center gap-2 text-stone-500 hover:text-red-400 text-xs transition-colors group"
+            title="Sign Out"
+          >
+            <div className="w-8 h-8 rounded-full bg-stone-900 flex items-center justify-center group-hover:bg-red-950/20 transition-colors">
+              <LogOut size={16} />
+            </div>
+            <span className="hidden sm:inline">Sign Out</span>
+          </button>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-        
+
         {/* Left Panel: Interaction */}
         <section className="flex-1 flex flex-col relative bg-[#0c0a09]">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-stone-900/20 via-transparent to-transparent opacity-50 pointer-events-none"></div>
-          
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-stone-900/20 via-transparent to-transparent opacity-50 pointer-events-none"></div>
+
           {/* Chat Transcript Area */}
           <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar relative z-10">
             {messages.length === 0 && !isConnected && !errorMsg && (
-                <div className="flex flex-col items-center justify-center h-full text-stone-600 text-sm gap-2">
-                    <div className="w-12 h-12 rounded-full bg-stone-900 flex items-center justify-center mb-2">
-                        <Mic size={20} className="text-stone-700" />
-                    </div>
-                    <p>Tap the microphone to start your booking.</p>
+              <div className="flex flex-col items-center justify-center h-full text-stone-600 text-sm gap-2">
+                <div className="w-12 h-12 rounded-full bg-stone-900 flex items-center justify-center mb-2">
+                  <Mic size={20} className="text-stone-700" />
                 </div>
+                <p>Tap the microphone to start your booking.</p>
+              </div>
             )}
-            
+
             {errorMsg && (
-                <div className="flex items-center justify-center py-4 px-6 bg-red-900/20 border border-red-900/50 rounded-lg mx-8 mt-4 text-red-400 gap-2">
-                    <AlertCircle size={18} />
-                    <span className="text-sm">{errorMsg}</span>
-                </div>
+              <div className="flex items-center justify-center py-4 px-6 bg-red-900/20 border border-red-900/50 rounded-lg mx-8 mt-4 text-red-400 gap-2">
+                <AlertCircle size={18} />
+                <span className="text-sm">{errorMsg}</span>
+              </div>
             )}
 
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex gap-5 ${msg.role === 'user' ? 'flex-row-reverse' : ''} animate-fade-in`}>
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg ${
-                    msg.role === 'assistant' 
-                    ? 'bg-amber-500 text-stone-950' 
-                    : 'bg-stone-800 text-stone-400'
-                }`}>
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg ${msg.role === 'assistant'
+                  ? 'bg-amber-500 text-stone-950'
+                  : 'bg-stone-800 text-stone-400'
+                  }`}>
                   {msg.role === 'assistant' ? <UtensilsCrossed size={16} /> : <div className="text-[10px] font-bold">YOU</div>}
                 </div>
-                <div className={`max-w-[85%] lg:max-w-[70%] rounded-2xl p-5 text-sm leading-7 shadow-sm ${
-                  msg.role === 'assistant' 
-                    ? 'bg-[#1c1917] border border-[#2a2725] text-stone-300' 
-                    : 'bg-[#2a2725] text-stone-200'
-                }`}>
+                <div className={`max-w-[85%] lg:max-w-[70%] rounded-2xl p-5 text-sm leading-7 shadow-sm ${msg.role === 'assistant'
+                  ? 'bg-[#1c1917] border border-[#2a2725] text-stone-300'
+                  : 'bg-[#2a2725] text-stone-200'
+                  }`}>
                   {msg.text}
                 </div>
               </div>
@@ -176,48 +193,46 @@ const App: React.FC = () => {
           {/* Voice Controls */}
           <div className="h-72 border-t border-[#2a2725] bg-[#0c0a09] flex flex-col items-center justify-center p-8 relative z-20">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-px bg-gradient-to-r from-transparent via-amber-900/30 to-transparent"></div>
-            
+
             <div className="mb-8 h-6 flex items-end">
-                <Visualizer isActive={isConnected && !isMuted} volume={volume} />
+              <Visualizer isActive={isConnected && !isMuted} volume={volume} />
             </div>
 
             <div className="flex items-center gap-6">
-                <button
+              <button
                 onClick={handleMicToggle}
-                className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-500 group relative ${
-                    isConnected 
-                    ? (isMuted ? 'bg-stone-800 text-stone-500' : 'bg-amber-950/30 text-amber-500')
-                    : 'bg-stone-900 text-stone-500 hover:text-stone-300 hover:bg-stone-800'
-                }`}
-                >
-                <div className={`absolute inset-0 rounded-full border transition-all duration-500 ${
-                    isConnected 
-                    ? (isMuted ? 'border-stone-700 scale-100' : 'border-amber-500/50 scale-110')
-                    : 'border-stone-800 scale-100'
-                }`}></div>
-                
-                {isConnected && !isMuted && (
-                    <div className="absolute inset-0 rounded-full bg-amber-500/20 animate-pulse"></div>
-                )}
-                
-                {isConnected ? (
-                    isMuted ? <MicOff size={28} /> : <Mic size={28} />
-                ) : (
-                    <Mic size={28} />
-                )}
-                </button>
+                className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-500 group relative ${isConnected
+                  ? (isMuted ? 'bg-stone-800 text-stone-500' : 'bg-amber-950/30 text-amber-500')
+                  : 'bg-stone-900 text-stone-500 hover:text-stone-300 hover:bg-stone-800'
+                  }`}
+              >
+                <div className={`absolute inset-0 rounded-full border transition-all duration-500 ${isConnected
+                  ? (isMuted ? 'border-stone-700 scale-100' : 'border-amber-500/50 scale-110')
+                  : 'border-stone-800 scale-100'
+                  }`}></div>
 
-                {isConnected && (
-                    <button 
-                        onClick={handleDisconnect}
-                        className="w-12 h-12 rounded-full bg-red-950/20 border border-red-900/30 flex items-center justify-center text-red-500 hover:bg-red-900/40 transition-all absolute right-8 lg:static lg:ml-0"
-                        title="End Session"
-                    >
-                        <PhoneOff size={20} />
-                    </button>
+                {isConnected && !isMuted && (
+                  <div className="absolute inset-0 rounded-full bg-amber-500/20 animate-pulse"></div>
                 )}
+
+                {isConnected ? (
+                  isMuted ? <MicOff size={28} /> : <Mic size={28} />
+                ) : (
+                  <Mic size={28} />
+                )}
+              </button>
+
+              {isConnected && (
+                <button
+                  onClick={handleDisconnect}
+                  className="w-12 h-12 rounded-full bg-red-950/20 border border-red-900/30 flex items-center justify-center text-red-500 hover:bg-red-900/40 transition-all absolute right-8 lg:static lg:ml-0"
+                  title="End Session"
+                >
+                  <PhoneOff size={20} />
+                </button>
+              )}
             </div>
-            
+
             <p className="mt-6 text-xs font-medium tracking-wide transition-colors">
               {!isConnected && !errorMsg && <span className="text-stone-500">Tap to start booking</span>}
               {errorMsg && <span className="text-red-500">System Offline</span>}
@@ -232,17 +247,17 @@ const App: React.FC = () => {
           <div className="p-6 border-b border-[#2a2725] flex justify-between items-center">
             <h2 className="text-xl font-serif text-amber-500/90 flex items-center gap-3">
               <Calendar className="w-5 h-5 text-amber-600" />
-              Bookings
+              Your Bookings
             </h2>
-            <button 
-                onClick={fetchBookings} 
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-800 text-stone-500 hover:text-amber-500 transition-colors"
-                title="Refresh Bookings"
+            <button
+              onClick={fetchBookings}
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-800 text-stone-500 hover:text-amber-500 transition-colors"
+              title="Refresh Bookings"
             >
               <RefreshCw size={14} />
             </button>
           </div>
-          
+
           <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-[#0f0d0c]">
             <div className="mb-10">
               <h3 className="text-[10px] font-bold text-stone-600 uppercase tracking-[0.2em] mb-6">
@@ -250,7 +265,7 @@ const App: React.FC = () => {
               </h3>
               {upcomingBookings.length === 0 ? (
                 <div className="text-center py-12 border border-dashed border-[#2a2725] rounded-xl bg-stone-900/20">
-                    <p className="text-stone-600 text-xs">No upcoming reservations.</p>
+                  <p className="text-stone-600 text-xs">No upcoming reservations.</p>
                 </div>
               ) : (
                 upcomingBookings.map(b => (
@@ -260,26 +275,63 @@ const App: React.FC = () => {
             </div>
 
             {pastBookings.length > 0 && (
-                <div>
-                  <h3 className="text-[10px] font-bold text-stone-600 uppercase tracking-[0.2em] mb-6">
-                    Past & Cancelled ({pastBookings.length})
-                  </h3>
-                  <div className="space-y-4 opacity-70 hover:opacity-100 transition-opacity duration-300">
-                    {pastBookings.map(b => (
-                        <BookingCard key={b.bookingId} booking={b} onRefresh={fetchBookings} />
-                    ))}
-                  </div>
+              <div>
+                <h3 className="text-[10px] font-bold text-stone-600 uppercase tracking-[0.2em] mb-6">
+                  Past & Cancelled ({pastBookings.length})
+                </h3>
+                <div className="space-y-4 opacity-70 hover:opacity-100 transition-opacity duration-300">
+                  {pastBookings.map(b => (
+                    <BookingCard key={b.bookingId} booking={b} onRefresh={fetchBookings} />
+                  ))}
                 </div>
+              </div>
             )}
           </div>
         </section>
-        
+
       </main>
-      
+
       <footer className="py-3 text-center text-[10px] text-stone-600 bg-[#0c0a09] border-t border-[#2a2725]">
         <p>Powered by AI • Built for Vaiu Software Developer Internship</p>
       </footer>
     </div>
+  );
+};
+
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { token, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0c0a09] flex items-center justify-center">
+        <Loader2 className="text-amber-500 animate-spin" size={40} />
+      </div>
+    );
+  }
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+const App: React.FC = () => {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <MainApp />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </Router>
   );
 };
 

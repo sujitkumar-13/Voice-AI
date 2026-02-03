@@ -1,9 +1,14 @@
 import { Booking, CreateBookingArgs, BookingStatus } from '../types';
 
-const API_URL = 'https://voiceai-api.vercel.app/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const STORAGE_KEY = 'golden_table_bookings';
 
 const RESTAURANT_CITY = 'India';
+
+const getAuthHeader = (): Record<string, string> => {
+  const token = localStorage.getItem('token');
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
+};
 
 const getLocalBookings = (): Booking[] => {
   try {
@@ -20,7 +25,9 @@ const saveLocalBookings = (bookings: Booking[]) => {
 
 export const getBookings = async (): Promise<Booking[]> => {
   try {
-    const response = await fetch(`${API_URL}/bookings`);
+    const response = await fetch(`${API_URL}/bookings`, {
+      headers: getAuthHeader()
+    });
     if (!response.ok) throw new Error('Failed to fetch bookings');
     return await response.json();
   } catch (error) {
@@ -42,14 +49,21 @@ export const createBooking = async (args: CreateBookingArgs): Promise<Booking> =
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...getAuthHeader()
       },
       body: JSON.stringify(args),
     });
 
-    if (!response.ok) throw new Error('Failed to create booking');
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Failed to create booking');
+    }
     return await response.json();
-  } catch (error) {
-    console.warn("Backend unavailable (createBooking), saving to local storage fallback.");
+  } catch (error: any) {
+    if (error.message.includes('past date')) {
+      throw error; // Re-throw validation errors
+    }
+    console.warn("Backend unavailable or returned error (createBooking), saving to local storage fallback.");
     const bookings = getLocalBookings();
     bookings.unshift(fallbackBooking);
     saveLocalBookings(bookings);
@@ -62,6 +76,7 @@ export const cancelBooking = async (bookingId: string): Promise<boolean> => {
     const encodedId = encodeURIComponent(bookingId);
     const response = await fetch(`${API_URL}/bookings/${encodedId}`, {
       method: 'DELETE',
+      headers: getAuthHeader()
     });
     if (!response.ok) throw new Error('Failed to cancel booking');
     return true;
@@ -69,7 +84,7 @@ export const cancelBooking = async (bookingId: string): Promise<boolean> => {
     console.warn("Backend unavailable (cancelBooking), updating local storage fallback.");
     const bookings = getLocalBookings();
     const index = bookings.findIndex(b => b.bookingId === bookingId);
-    
+
     if (index !== -1) {
       bookings[index].status = BookingStatus.CANCELLED;
       saveLocalBookings(bookings);
@@ -99,7 +114,7 @@ export const getWeatherForecast = async (dateStr: string): Promise<string> => {
     const url = `https://api.openweathermap.org/data/2.5/forecast?q=${RESTAURANT_CITY}&appid=${apiKey}&units=metric`;
     const response = await fetch(url);
     if (!response.ok) throw new Error("Weather API failed");
-    
+
     const data = await response.json();
     const targetDate = new Date(dateStr).toISOString().split('T')[0];
     const forecast = data.list.find((item: any) => item.dt_txt.startsWith(targetDate));
