@@ -13,7 +13,7 @@ const Signup: React.FC = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const { login } = useAuth();
+    // const { login } = useAuth(); // Unused
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -22,9 +22,9 @@ const Signup: React.FC = () => {
         setError('');
 
         try {
-            const res = await axios.post(`${API_URL}/auth/register`, { name, email, password });
-            login(res.data);
-            navigate('/');
+            await axios.post(`${API_URL}/auth/register`, { name, email, password });
+            // login(res.data); // Removed auto-login as per request
+            navigate('/login');
         } catch (err: any) {
             setError(err.response?.data?.error || 'Registration failed. Please try again.');
         } finally {
