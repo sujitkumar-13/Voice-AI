@@ -127,17 +127,9 @@ const MainApp: React.FC = () => {
   return (
     <div className="h-screen flex flex-col font-sans bg-stone-50 dark:bg-[#0c0a09] text-stone-800 dark:text-stone-200 overflow-hidden transition-colors duration-300">
       {/* Header */}
-      <header className="h-20 border-b border-stone-200 dark:border-[#2a2725] bg-white dark:bg-[#0c0a09] flex items-center justify-between px-4 md:px-8 sticky top-0 z-30 transition-colors duration-300">
+      {/* Header */}
+      <header className="h-20 border-b border-stone-200 dark:border-[#2a2725] bg-white dark:bg-[#0c0a09] flex items-center justify-between px-4 md:px-8 sticky top-0 z-50 transition-colors duration-300">
         <div className="flex items-center gap-4">
-          <div className="md:hidden">
-            <button onClick={toggleMobileMenu} className="p-2 text-stone-600 dark:text-stone-400">
-              <div className="space-y-1.5">
-                <span className={`block w-6 h-0.5 bg-current transition-transform ${isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
-                <span className={`block w-6 h-0.5 bg-current transition-opacity ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
-                <span className={`block w-6 h-0.5 bg-current transition-transform ${isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
-              </div>
-            </button>
-          </div>
           <div className="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center text-[#0c0a09] shadow-[0_0_15px_rgba(245,158,11,0.3)]">
             <UtensilsCrossed size={22} strokeWidth={2.5} />
           </div>
@@ -147,31 +139,44 @@ const MainApp: React.FC = () => {
           </div>
         </div>
 
-        {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-6">
-          <ThemeToggle />
+        <div className="flex items-center gap-6">
+          {/* Desktop Nav */}
+          <div className="hidden md:flex items-center gap-6">
+            <ThemeToggle />
 
-          <div className="flex items-center gap-2 text-stone-500 dark:text-stone-400 text-xs bg-stone-100 dark:bg-stone-900/50 border border-stone-200 dark:border-stone-800 px-4 py-2 rounded-full">
-            <div className={`w-2 h-2 rounded-full bg-green-500 ${isConnected ? 'animate-pulse' : ''}`}></div>
-            <span>Welcome, {user?.name}</span>
+            <div className="flex items-center gap-2 text-stone-500 dark:text-stone-400 text-xs bg-stone-100 dark:bg-stone-900/50 border border-stone-200 dark:border-stone-800 px-4 py-2 rounded-full">
+              <div className={`w-2 h-2 rounded-full bg-green-500 ${isConnected ? 'animate-pulse' : ''}`}></div>
+              <span>Welcome, {user?.name}</span>
+            </div>
+
+            <button
+              onClick={logout}
+              className="flex items-center gap-2 text-stone-500 hover:text-red-500 dark:hover:text-red-400 text-xs transition-colors group"
+              title="Sign Out"
+            >
+              <div className="w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-900 flex items-center justify-center group-hover:bg-red-50 dark:group-hover:bg-red-950/20 transition-colors">
+                <LogOut size={16} />
+              </div>
+              <span className="hidden sm:inline">Sign Out</span>
+            </button>
           </div>
 
-          <button
-            onClick={logout}
-            className="flex items-center gap-2 text-stone-500 hover:text-red-500 dark:hover:text-red-400 text-xs transition-colors group"
-            title="Sign Out"
-          >
-            <div className="w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-900 flex items-center justify-center group-hover:bg-red-50 dark:group-hover:bg-red-950/20 transition-colors">
-              <LogOut size={16} />
-            </div>
-            <span className="hidden sm:inline">Sign Out</span>
-          </button>
+          {/* Mobile Hamburger (Right Side) */}
+          <div className="md:hidden">
+            <button onClick={toggleMobileMenu} className="p-2 text-stone-600 dark:text-stone-400">
+              <div className="space-y-1.5">
+                <span className={`block w-6 h-0.5 bg-current transition-transform ${isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
+                <span className={`block w-6 h-0.5 bg-current transition-opacity ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
+                <span className={`block w-6 h-0.5 bg-current transition-transform ${isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
+              </div>
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-20 bg-stone-50 dark:bg-[#0c0a09] pt-24 px-6 md:hidden flex flex-col gap-6 animate-fade-in">
+        <div className="fixed inset-0 z-40 bg-stone-50 dark:bg-[#0c0a09] pt-24 px-6 md:hidden flex flex-col gap-6">
           <button
             onClick={() => handleMobileNav('chat')}
             className={`flex items-center gap-4 text-lg font-serif p-4 rounded-xl border transition-colors ${mobileView === 'chat' ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-500' : 'border-stone-200 dark:border-[#2a2725] text-stone-600 dark:text-stone-400'}`}
