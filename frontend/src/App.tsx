@@ -292,7 +292,7 @@ const MainApp: React.FC = () => {
       </main>
 
       <footer className="py-3 text-center text-[10px] text-stone-600 bg-[#0c0a09] border-t border-[#2a2725]">
-        <p>Powered by AI • Built for Vaiu Software Developer Internship</p>
+        <p>Powered by AI</p>
       </footer>
     </div>
   );

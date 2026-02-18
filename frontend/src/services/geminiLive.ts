@@ -125,6 +125,9 @@ export class GeminiLiveService {
           11. **Confirmation**: "Let me confirm: Table for [Guests] on [Date] at [Time], [Cuisine] cuisine, [Seating]. Is that correct?"
           12. **Finalize**: If they say yes, call \`createBooking\`.
 
+          
+          13. **Error Handling**: If a tool return an error about an "Invalid Date" (e.g. Feb 30th), apologize and explain that the date does not exist on the calendar. Ask the user to "please choose a correct date."
+
           Current Date: ${new Date().toDateString()}.
           `,
           inputAudioTranscription: {},

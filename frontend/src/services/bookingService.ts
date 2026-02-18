@@ -1,4 +1,5 @@
 import { Booking, CreateBookingArgs, BookingStatus } from '../types';
+import { isValidDate } from '../utils/dateUtils';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const STORAGE_KEY = 'golden_table_bookings';
@@ -37,6 +38,11 @@ export const getBookings = async (): Promise<Booking[]> => {
 };
 
 export const createBooking = async (args: CreateBookingArgs): Promise<Booking> => {
+  // Validate Date strictly before sending to backend or saving locally
+  if (!isValidDate(args.bookingDate)) {
+    throw new Error(`Invalid date provided: ${args.bookingDate}. Please check the day and month.`);
+  }
+
   const fallbackBooking: Booking = {
     bookingId: `#BK-${Math.random().toString(36).substr(2, 8).toUpperCase()}`,
     ...args,
@@ -60,7 +66,7 @@ export const createBooking = async (args: CreateBookingArgs): Promise<Booking> =
     }
     return await response.json();
   } catch (error: any) {
-    if (error.message.includes('past date')) {
+    if (error.message.includes('past date') || error.message.includes('Invalid date')) {
       throw error; // Re-throw validation errors
     }
     console.warn("Backend unavailable or returned error (createBooking), saving to local storage fallback.");
@@ -103,6 +109,10 @@ const getSimulatedWeather = (dateStr: string): string => {
 };
 
 export const getWeatherForecast = async (dateStr: string): Promise<string> => {
+  if (!isValidDate(dateStr)) {
+    throw new Error(`Invalid date: ${dateStr}`);
+  }
+
   const apiKey = import.meta.env.VITE_OPENWEATHER_API_KEY;
 
   if (!apiKey || apiKey === 'YOUR_OPENWEATHER_API_KEY_HERE') {
