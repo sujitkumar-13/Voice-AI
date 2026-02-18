@@ -128,7 +128,7 @@ const MainApp: React.FC = () => {
     <div className="h-screen flex flex-col font-sans bg-stone-50 dark:bg-[#0c0a09] text-stone-800 dark:text-stone-200 overflow-hidden transition-colors duration-300">
       {/* Header */}
       {/* Header */}
-      <header className="h-20 border-b border-stone-200 dark:border-[#2a2725] bg-white dark:bg-[#0c0a09] flex items-center justify-between px-4 md:px-8 sticky top-0 z-50 transition-colors duration-300">
+      <header className="h-20 border-b border-stone-200 dark:border-[#2a2725] bg-white dark:bg-[#0c0a09] flex items-center justify-between px-4 md:px-8 fixed top-0 w-full left-0 z-50 transition-colors duration-300">
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center text-[#0c0a09] shadow-[0_0_15px_rgba(245,158,11,0.3)]">
             <UtensilsCrossed size={22} strokeWidth={2.5} />
@@ -208,7 +208,7 @@ const MainApp: React.FC = () => {
       )}
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+      <main className="flex-1 flex flex-col lg:flex-row overflow-hidden relative pt-20">
 
         {/* Left Panel: Interaction (Chat) */}
         <section className={`flex-1 flex flex-col relative bg-stone-50 dark:bg-[#0c0a09] transition-colors duration-300 ${mobileView === 'bookings' ? 'hidden lg:flex' : 'flex'}`}>
@@ -259,7 +259,7 @@ const MainApp: React.FC = () => {
               <Visualizer isActive={isConnected && !isMuted} volume={volume} />
             </div>
 
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4 md:gap-6 justify-center">
               <button
                 onClick={handleMicToggle}
                 className={`w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center transition-all duration-500 group relative ${isConnected
@@ -286,7 +286,7 @@ const MainApp: React.FC = () => {
               {isConnected && (
                 <button
                   onClick={handleDisconnect}
-                  className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-red-100 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 flex items-center justify-center text-red-500 hover:bg-red-200 dark:hover:bg-red-900/40 transition-all absolute right-4 md:right-8 lg:static lg:ml-0"
+                  className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-red-100 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 flex items-center justify-center text-red-500 hover:bg-red-200 dark:hover:bg-red-900/40 transition-all"
                   title="End Session"
                 >
                   <PhoneOff size={18} className="md:w-5 md:h-5" />
