@@ -21,6 +21,8 @@ const MainApp: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user, logout } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mobileView, setMobileView] = useState<'chat' | 'bookings'>('chat');
 
   const fetchBookings = async () => {
     try {
@@ -111,6 +113,13 @@ const MainApp: React.FC = () => {
     setIsMuted(false);
   };
 
+  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+
+  const handleMobileNav = (view: 'chat' | 'bookings') => {
+    setMobileView(view);
+    setIsMobileMenuOpen(false);
+  };
+
   // Filter based on status string (matches DB schema)
   const upcomingBookings = bookings.filter(b => b.status === BookingStatus.CONFIRMED);
   const pastBookings = bookings.filter(b => b.status !== BookingStatus.CONFIRMED);
@@ -118,21 +127,31 @@ const MainApp: React.FC = () => {
   return (
     <div className="h-screen flex flex-col font-sans bg-stone-50 dark:bg-[#0c0a09] text-stone-800 dark:text-stone-200 overflow-hidden transition-colors duration-300">
       {/* Header */}
-      <header className="h-20 border-b border-stone-200 dark:border-[#2a2725] bg-white dark:bg-[#0c0a09] flex items-center justify-between px-8 sticky top-0 z-20 transition-colors duration-300">
+      <header className="h-20 border-b border-stone-200 dark:border-[#2a2725] bg-white dark:bg-[#0c0a09] flex items-center justify-between px-4 md:px-8 sticky top-0 z-30 transition-colors duration-300">
         <div className="flex items-center gap-4">
+          <div className="md:hidden">
+            <button onClick={toggleMobileMenu} className="p-2 text-stone-600 dark:text-stone-400">
+              <div className="space-y-1.5">
+                <span className={`block w-6 h-0.5 bg-current transition-transform ${isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
+                <span className={`block w-6 h-0.5 bg-current transition-opacity ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
+                <span className={`block w-6 h-0.5 bg-current transition-transform ${isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
+              </div>
+            </button>
+          </div>
           <div className="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center text-[#0c0a09] shadow-[0_0_15px_rgba(245,158,11,0.3)]">
             <UtensilsCrossed size={22} strokeWidth={2.5} />
           </div>
           <div>
-            <h1 className="text-xl font-serif text-amber-600 dark:text-amber-500 tracking-wide font-medium">The Golden Table</h1>
-            <p className="text-[11px] text-stone-500 uppercase tracking-widest">Voice-Enabled Booking Assistant</p>
+            <h1 className="text-lg md:text-xl font-serif text-amber-600 dark:text-amber-500 tracking-wide font-medium">The Golden Table</h1>
+            <p className="text-[10px] md:text-[11px] text-stone-500 uppercase tracking-widest hidden sm:block">Voice-Enabled Booking Assistant</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-6">
+        {/* Desktop Nav */}
+        <div className="hidden md:flex items-center gap-6">
           <ThemeToggle />
 
-          <div className="hidden md:flex items-center gap-2 text-stone-500 dark:text-stone-400 text-xs bg-stone-100 dark:bg-stone-900/50 border border-stone-200 dark:border-stone-800 px-4 py-2 rounded-full">
+          <div className="flex items-center gap-2 text-stone-500 dark:text-stone-400 text-xs bg-stone-100 dark:bg-stone-900/50 border border-stone-200 dark:border-stone-800 px-4 py-2 rounded-full">
             <div className={`w-2 h-2 rounded-full bg-green-500 ${isConnected ? 'animate-pulse' : ''}`}></div>
             <span>Welcome, {user?.name}</span>
           </div>
@@ -150,15 +169,48 @@ const MainApp: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-20 bg-stone-50 dark:bg-[#0c0a09] pt-24 px-6 md:hidden flex flex-col gap-6 animate-fade-in">
+          <button
+            onClick={() => handleMobileNav('chat')}
+            className={`flex items-center gap-4 text-lg font-serif p-4 rounded-xl border transition-colors ${mobileView === 'chat' ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-500' : 'border-stone-200 dark:border-[#2a2725] text-stone-600 dark:text-stone-400'}`}
+          >
+            <Mic size={24} />
+            <span>Voice Assistant</span>
+          </button>
 
-        {/* Left Panel: Interaction */}
-        <section className="flex-1 flex flex-col relative bg-stone-50 dark:bg-[#0c0a09] transition-colors duration-300">
+          <button
+            onClick={() => handleMobileNav('bookings')}
+            className={`flex items-center gap-4 text-lg font-serif p-4 rounded-xl border transition-colors ${mobileView === 'bookings' ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-500' : 'border-stone-200 dark:border-[#2a2725] text-stone-600 dark:text-stone-400'}`}
+          >
+            <Calendar size={24} />
+            <span>My Bookings</span>
+          </button>
+
+          <div className="border-t border-stone-200 dark:border-[#2a2725] pt-6 flex flex-col gap-6">
+            <div className="flex justify-between items-center">
+              <span className="text-stone-500 dark:text-stone-400">Theme</span>
+              <ThemeToggle />
+            </div>
+
+            <button onClick={logout} className="flex items-center gap-4 text-red-500 dark:text-red-400">
+              <LogOut size={24} />
+              <span>Sign Out</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+
+        {/* Left Panel: Interaction (Chat) */}
+        <section className={`flex-1 flex flex-col relative bg-stone-50 dark:bg-[#0c0a09] transition-colors duration-300 ${mobileView === 'bookings' ? 'hidden lg:flex' : 'flex'}`}>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-stone-200/50 dark:from-stone-900/20 via-transparent to-transparent opacity-50 pointer-events-none"></div>
 
           {/* Chat Transcript Area */}
-          <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar relative z-10">
+          <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 custom-scrollbar relative z-10">
             {messages.length === 0 && !isConnected && !errorMsg && (
               <div className="flex flex-col items-center justify-center h-full text-stone-500 dark:text-stone-600 text-sm gap-2">
                 <div className="w-12 h-12 rounded-full bg-stone-200 dark:bg-stone-900 flex items-center justify-center mb-2">
@@ -176,14 +228,14 @@ const MainApp: React.FC = () => {
             )}
 
             {messages.map((msg, idx) => (
-              <div key={idx} className={`flex gap-5 ${msg.role === 'user' ? 'flex-row-reverse' : ''} animate-fade-in`}>
+              <div key={idx} className={`flex gap-3 md:gap-5 ${msg.role === 'user' ? 'flex-row-reverse' : ''} animate-fade-in`}>
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg ${msg.role === 'assistant'
                   ? 'bg-amber-500 text-stone-950'
                   : 'bg-stone-200 dark:bg-stone-800 text-stone-600 dark:text-stone-400'
                   }`}>
                   {msg.role === 'assistant' ? <UtensilsCrossed size={16} /> : <div className="text-[10px] font-bold">YOU</div>}
                 </div>
-                <div className={`max-w-[85%] lg:max-w-[70%] rounded-2xl p-5 text-sm leading-7 shadow-sm ${msg.role === 'assistant'
+                <div className={`max-w-[85%] lg:max-w-[70%] rounded-2xl p-4 md:p-5 text-sm leading-6 md:leading-7 shadow-sm ${msg.role === 'assistant'
                   ? 'bg-white dark:bg-[#1c1917] border border-stone-200 dark:border-[#2a2725] text-stone-700 dark:text-stone-300'
                   : 'bg-stone-200 dark:bg-[#2a2725] text-stone-800 dark:text-stone-200'
                   }`}>
@@ -195,17 +247,17 @@ const MainApp: React.FC = () => {
           </div>
 
           {/* Voice Controls */}
-          <div className="h-72 border-t border-stone-200 dark:border-[#2a2725] bg-white dark:bg-[#0c0a09] flex flex-col items-center justify-center p-8 relative z-20 transition-colors duration-300">
+          <div className="h-60 md:h-72 border-t border-stone-200 dark:border-[#2a2725] bg-white dark:bg-[#0c0a09] flex flex-col items-center justify-center p-4 md:p-8 relative z-20 transition-colors duration-300">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-px bg-gradient-to-r from-transparent via-amber-900/30 to-transparent"></div>
 
-            <div className="mb-8 h-6 flex items-end">
+            <div className="mb-6 md:mb-8 h-6 flex items-end">
               <Visualizer isActive={isConnected && !isMuted} volume={volume} />
             </div>
 
             <div className="flex items-center gap-6">
               <button
                 onClick={handleMicToggle}
-                className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-500 group relative ${isConnected
+                className={`w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center transition-all duration-500 group relative ${isConnected
                   ? (isMuted ? 'bg-stone-200 dark:bg-stone-800 text-stone-500' : 'bg-amber-100 dark:bg-amber-950/30 text-amber-600 dark:text-amber-500')
                   : 'bg-stone-100 dark:bg-stone-900 text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-800'
                   }`}
@@ -220,24 +272,24 @@ const MainApp: React.FC = () => {
                 )}
 
                 {isConnected ? (
-                  isMuted ? <MicOff size={28} /> : <Mic size={28} />
+                  isMuted ? <MicOff size={24} className="md:w-7 md:h-7" /> : <Mic size={24} className="md:w-7 md:h-7" />
                 ) : (
-                  <Mic size={28} />
+                  <Mic size={24} className="md:w-7 md:h-7" />
                 )}
               </button>
 
               {isConnected && (
                 <button
                   onClick={handleDisconnect}
-                  className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 flex items-center justify-center text-red-500 hover:bg-red-200 dark:hover:bg-red-900/40 transition-all absolute right-8 lg:static lg:ml-0"
+                  className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-red-100 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 flex items-center justify-center text-red-500 hover:bg-red-200 dark:hover:bg-red-900/40 transition-all absolute right-4 md:right-8 lg:static lg:ml-0"
                   title="End Session"
                 >
-                  <PhoneOff size={20} />
+                  <PhoneOff size={18} className="md:w-5 md:h-5" />
                 </button>
               )}
             </div>
 
-            <p className="mt-6 text-xs font-medium tracking-wide transition-colors">
+            <p className="mt-4 md:mt-6 text-xs font-medium tracking-wide transition-colors">
               {!isConnected && !errorMsg && <span className="text-stone-500">Tap to start booking</span>}
               {errorMsg && <span className="text-red-500">System Offline</span>}
               {isConnected && !isMuted && <span className="text-amber-600 dark:text-amber-500 animate-pulse">Listening... Tap to mute</span>}
@@ -247,9 +299,9 @@ const MainApp: React.FC = () => {
         </section>
 
         {/* Right Panel: Bookings */}
-        <section className="w-full lg:w-[420px] bg-stone-100 dark:bg-[#0f0d0c] flex flex-col border-l border-stone-200 dark:border-[#2a2725] overflow-hidden shadow-2xl z-30 transition-colors duration-300">
-          <div className="p-6 border-b border-stone-200 dark:border-[#2a2725] flex justify-between items-center bg-stone-100 dark:bg-[#0f0d0c]">
-            <h2 className="text-xl font-serif text-amber-700 dark:text-amber-500/90 flex items-center gap-3">
+        <section className={`w-full lg:w-[420px] bg-stone-100 dark:bg-[#0f0d0c] flex-col border-l border-stone-200 dark:border-[#2a2725] overflow-hidden shadow-2xl z-30 transition-colors duration-300 ${mobileView === 'chat' ? 'hidden lg:flex' : 'flex'}`}>
+          <div className="p-4 md:p-6 border-b border-stone-200 dark:border-[#2a2725] flex justify-between items-center bg-stone-100 dark:bg-[#0f0d0c]">
+            <h2 className="text-lg md:text-xl font-serif text-amber-700 dark:text-amber-500/90 flex items-center gap-3">
               <Calendar className="w-5 h-5 text-amber-600" />
               Your Bookings
             </h2>
@@ -262,7 +314,7 @@ const MainApp: React.FC = () => {
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-stone-50 dark:bg-[#0f0d0c]">
+          <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-stone-50 dark:bg-[#0f0d0c]">
             <div className="mb-10">
               <h3 className="text-[10px] font-bold text-stone-500 dark:text-stone-600 uppercase tracking-[0.2em] mb-6">
                 Upcoming ({upcomingBookings.length})

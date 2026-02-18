@@ -16,13 +16,18 @@ const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 app.use(cors());
 app.use(express.json());
 
-// MongoDB Connection (Using ENV)
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-  .then(() => console.log('MongoDB Connected to Atlas'))
-  .catch(err => console.error('MongoDB Connection Error:', err));
+const connectDB = require('./db');
+
+// Connect to DB before handling requests (Vercel Serverless Fix)
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error('Database connection error:', err);
+    res.status(500).json({ error: 'Database Connection Error' });
+  }
+});
 
 // Auth Routes
 app.post('/api/auth/register', async (req, res) => {
