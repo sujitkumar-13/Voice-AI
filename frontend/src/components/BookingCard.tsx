@@ -10,11 +10,11 @@ interface Props {
 
 const BookingCard: React.FC<Props> = ({ booking, onRefresh }) => {
   const isCancelled = booking.status === BookingStatus.CANCELLED;
-  
+
   const handleCancel = async () => {
     if (confirm('Are you sure you want to cancel this booking?')) {
-        await BookingService.cancelBooking(booking.bookingId);
-        onRefresh();
+      await BookingService.cancelBooking(booking.bookingId);
+      onRefresh();
     }
   };
 
@@ -23,54 +23,54 @@ const BookingCard: React.FC<Props> = ({ booking, onRefresh }) => {
   };
 
   return (
-    <div className={`p-5 rounded-lg border mb-4 transition-all ${
-      isCancelled 
-        ? 'bg-stone-900/40 border-stone-800 opacity-60' 
-        : 'bg-[#1a1716] border-[#2a2725] hover:border-amber-900/30'
-    }`}>
+    <div className="bg-white dark:bg-[#1c1917] border border-stone-200 dark:border-[#2a2725] rounded-xl p-5 mb-4 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
       <div className="flex justify-between items-start mb-3">
         <div>
-          <h3 className="text-lg font-serif text-[#e5e5e5] tracking-wide">{booking.customerName}</h3>
-          <p className="text-[10px] text-stone-500 font-mono mt-1">{booking.bookingId}</p>
+          <h4 className="font-serif text-lg text-stone-800 dark:text-stone-200">{booking.customerName}</h4>
+          <div className="flex items-center text-stone-500 dark:text-stone-500 text-xs mt-1 gap-2">
+            <span className="flex items-center gap-1"><Users size={12} /> {booking.numberOfGuests} Guests</span>
+            <span>•</span>
+            <span>{booking.bookingId}</span> {/* Replaced email with bookingId as per original context */}
+          </div>
         </div>
-        <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border ${
-          isCancelled 
-            ? 'bg-red-950/20 text-red-700 border-red-900/20' 
+        <div className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${isCancelled
+            ? 'bg-red-950/20 text-red-700 border-red-900/20'
             : 'bg-emerald-950/20 text-emerald-500 border-emerald-900/20'
-        }`}>
+          }`}>
           {booking.status}
-        </span>
+        </div>
       </div>
 
-      <div className="space-y-2.5 text-sm text-stone-400 mt-4">
-        <div className="flex items-center gap-3">
-          <Calendar className="w-4 h-4 text-amber-700" />
-          <span>{formatDate(booking.bookingDate)}</span>
+      <div className="flex items-center gap-4 text-sm text-stone-600 dark:text-stone-400 mb-4">
+        <div className="flex items-center gap-1.5">
+          <Calendar size={14} className="text-amber-600 dark:text-amber-500" />
+          {formatDate(booking.bookingDate)}
         </div>
-        <div className="flex items-center gap-3">
-          <Clock className="w-4 h-4 text-amber-700" />
-          <span>{booking.bookingTime}</span>
+        <div className="flex items-center gap-1.5">
+          <Clock size={14} className="text-amber-600 dark:text-amber-500" />
+          {booking.bookingTime}
         </div>
-        <div className="flex items-center gap-3">
-          <Users className="w-4 h-4 text-amber-700" />
-          <span>{booking.numberOfGuests} Guests</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <Utensils className="w-4 h-4 text-amber-700" />
+      </div>
+
+      {booking.cuisinePreference && (
+        <div className="flex items-center gap-3 text-sm text-stone-600 dark:text-stone-400">
+          <Utensils className="w-4 h-4 text-amber-700 dark:text-amber-500" />
           <span className="capitalize">{booking.cuisinePreference}</span>
         </div>
-        {booking.seatingPreference && (
-            <div className="flex items-center gap-3">
-                <div className="w-4 flex justify-center"><div className="w-1.5 h-1.5 rounded-full bg-stone-700"></div></div>
-                <span className="text-stone-500 capitalize">{booking.seatingPreference} Seating</span>
-            </div>
-        )}
-      </div>
+      )}
 
+      {booking.seatingPreference && (
+        <div className="flex items-center gap-3 text-sm text-stone-600 dark:text-stone-400 mt-2">
+          <div className="w-4 flex justify-center"><div className="w-1.5 h-1.5 rounded-full bg-stone-700 dark:bg-stone-500"></div></div>
+          <span className="text-stone-500 dark:text-stone-500 capitalize">{booking.seatingPreference} Seating</span>
+        </div>
+      )}
+
+      {/* Action Buttons */}
       {!isCancelled && (
-        <button 
-            onClick={handleCancel}
-            className="mt-5 w-full flex items-center gap-2 text-xs font-medium text-red-900/60 hover:text-red-500 transition-colors pt-3 border-t border-dashed border-stone-800"
+        <button
+          onClick={handleCancel}
+          className="mt-5 w-full flex items-center gap-2 text-xs font-medium text-red-900/60 hover:text-red-500 transition-colors pt-3 border-t border-dashed border-stone-800"
         >
           <Trash2 className="w-3.5 h-3.5" />
           Cancel Booking

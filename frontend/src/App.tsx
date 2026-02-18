@@ -6,6 +6,8 @@ import BookingCard from './components/BookingCard';
 import Visualizer from './components/Visualizer';
 import { Booking, BookingStatus, ChatMessage } from './types';
 import { useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
+import { ThemeToggle } from './components/ThemeToggle';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import { UtensilsCrossed, Mic, MicOff, RefreshCw, Calendar, PhoneOff, AlertCircle, LogOut, Loader2 } from 'lucide-react';
@@ -114,31 +116,33 @@ const MainApp: React.FC = () => {
   const pastBookings = bookings.filter(b => b.status !== BookingStatus.CONFIRMED);
 
   return (
-    <div className="h-screen flex flex-col font-sans bg-[#0c0a09] text-stone-200 overflow-hidden">
+    <div className="h-screen flex flex-col font-sans bg-stone-50 dark:bg-[#0c0a09] text-stone-800 dark:text-stone-200 overflow-hidden transition-colors duration-300">
       {/* Header */}
-      <header className="h-20 border-b border-[#2a2725] bg-[#0c0a09] flex items-center justify-between px-8 sticky top-0 z-20">
+      <header className="h-20 border-b border-stone-200 dark:border-[#2a2725] bg-white dark:bg-[#0c0a09] flex items-center justify-between px-8 sticky top-0 z-20 transition-colors duration-300">
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center text-[#0c0a09] shadow-[0_0_15px_rgba(245,158,11,0.3)]">
             <UtensilsCrossed size={22} strokeWidth={2.5} />
           </div>
           <div>
-            <h1 className="text-xl font-serif text-amber-500 tracking-wide font-medium">The Golden Table</h1>
+            <h1 className="text-xl font-serif text-amber-600 dark:text-amber-500 tracking-wide font-medium">The Golden Table</h1>
             <p className="text-[11px] text-stone-500 uppercase tracking-widest">Voice-Enabled Booking Assistant</p>
           </div>
         </div>
 
         <div className="flex items-center gap-6">
-          <div className="hidden md:flex items-center gap-2 text-stone-400 text-xs bg-stone-900/50 border border-stone-800 px-4 py-2 rounded-full">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+          <ThemeToggle />
+
+          <div className="hidden md:flex items-center gap-2 text-stone-500 dark:text-stone-400 text-xs bg-stone-100 dark:bg-stone-900/50 border border-stone-200 dark:border-stone-800 px-4 py-2 rounded-full">
+            <div className={`w-2 h-2 rounded-full bg-green-500 ${isConnected ? 'animate-pulse' : ''}`}></div>
             <span>Welcome, {user?.name}</span>
           </div>
 
           <button
             onClick={logout}
-            className="flex items-center gap-2 text-stone-500 hover:text-red-400 text-xs transition-colors group"
+            className="flex items-center gap-2 text-stone-500 hover:text-red-500 dark:hover:text-red-400 text-xs transition-colors group"
             title="Sign Out"
           >
-            <div className="w-8 h-8 rounded-full bg-stone-900 flex items-center justify-center group-hover:bg-red-950/20 transition-colors">
+            <div className="w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-900 flex items-center justify-center group-hover:bg-red-50 dark:group-hover:bg-red-950/20 transition-colors">
               <LogOut size={16} />
             </div>
             <span className="hidden sm:inline">Sign Out</span>
@@ -150,22 +154,22 @@ const MainApp: React.FC = () => {
       <main className="flex-1 flex flex-col lg:flex-row overflow-hidden">
 
         {/* Left Panel: Interaction */}
-        <section className="flex-1 flex flex-col relative bg-[#0c0a09]">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-stone-900/20 via-transparent to-transparent opacity-50 pointer-events-none"></div>
+        <section className="flex-1 flex flex-col relative bg-stone-50 dark:bg-[#0c0a09] transition-colors duration-300">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-stone-200/50 dark:from-stone-900/20 via-transparent to-transparent opacity-50 pointer-events-none"></div>
 
           {/* Chat Transcript Area */}
           <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar relative z-10">
             {messages.length === 0 && !isConnected && !errorMsg && (
-              <div className="flex flex-col items-center justify-center h-full text-stone-600 text-sm gap-2">
-                <div className="w-12 h-12 rounded-full bg-stone-900 flex items-center justify-center mb-2">
-                  <Mic size={20} className="text-stone-700" />
+              <div className="flex flex-col items-center justify-center h-full text-stone-500 dark:text-stone-600 text-sm gap-2">
+                <div className="w-12 h-12 rounded-full bg-stone-200 dark:bg-stone-900 flex items-center justify-center mb-2">
+                  <Mic size={20} className="text-stone-600 dark:text-stone-700" />
                 </div>
                 <p>Tap the microphone to start your booking.</p>
               </div>
             )}
 
             {errorMsg && (
-              <div className="flex items-center justify-center py-4 px-6 bg-red-900/20 border border-red-900/50 rounded-lg mx-8 mt-4 text-red-400 gap-2">
+              <div className="flex items-center justify-center py-4 px-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 rounded-lg mx-8 mt-4 text-red-600 dark:text-red-400 gap-2">
                 <AlertCircle size={18} />
                 <span className="text-sm">{errorMsg}</span>
               </div>
@@ -175,13 +179,13 @@ const MainApp: React.FC = () => {
               <div key={idx} className={`flex gap-5 ${msg.role === 'user' ? 'flex-row-reverse' : ''} animate-fade-in`}>
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg ${msg.role === 'assistant'
                   ? 'bg-amber-500 text-stone-950'
-                  : 'bg-stone-800 text-stone-400'
+                  : 'bg-stone-200 dark:bg-stone-800 text-stone-600 dark:text-stone-400'
                   }`}>
                   {msg.role === 'assistant' ? <UtensilsCrossed size={16} /> : <div className="text-[10px] font-bold">YOU</div>}
                 </div>
                 <div className={`max-w-[85%] lg:max-w-[70%] rounded-2xl p-5 text-sm leading-7 shadow-sm ${msg.role === 'assistant'
-                  ? 'bg-[#1c1917] border border-[#2a2725] text-stone-300'
-                  : 'bg-[#2a2725] text-stone-200'
+                  ? 'bg-white dark:bg-[#1c1917] border border-stone-200 dark:border-[#2a2725] text-stone-700 dark:text-stone-300'
+                  : 'bg-stone-200 dark:bg-[#2a2725] text-stone-800 dark:text-stone-200'
                   }`}>
                   {msg.text}
                 </div>
@@ -191,7 +195,7 @@ const MainApp: React.FC = () => {
           </div>
 
           {/* Voice Controls */}
-          <div className="h-72 border-t border-[#2a2725] bg-[#0c0a09] flex flex-col items-center justify-center p-8 relative z-20">
+          <div className="h-72 border-t border-stone-200 dark:border-[#2a2725] bg-white dark:bg-[#0c0a09] flex flex-col items-center justify-center p-8 relative z-20 transition-colors duration-300">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-px bg-gradient-to-r from-transparent via-amber-900/30 to-transparent"></div>
 
             <div className="mb-8 h-6 flex items-end">
@@ -202,13 +206,13 @@ const MainApp: React.FC = () => {
               <button
                 onClick={handleMicToggle}
                 className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-500 group relative ${isConnected
-                  ? (isMuted ? 'bg-stone-800 text-stone-500' : 'bg-amber-950/30 text-amber-500')
-                  : 'bg-stone-900 text-stone-500 hover:text-stone-300 hover:bg-stone-800'
+                  ? (isMuted ? 'bg-stone-200 dark:bg-stone-800 text-stone-500' : 'bg-amber-100 dark:bg-amber-950/30 text-amber-600 dark:text-amber-500')
+                  : 'bg-stone-100 dark:bg-stone-900 text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-800'
                   }`}
               >
                 <div className={`absolute inset-0 rounded-full border transition-all duration-500 ${isConnected
-                  ? (isMuted ? 'border-stone-700 scale-100' : 'border-amber-500/50 scale-110')
-                  : 'border-stone-800 scale-100'
+                  ? (isMuted ? 'border-stone-300 dark:border-stone-700 scale-100' : 'border-amber-400 dark:border-amber-500/50 scale-110')
+                  : 'border-stone-200 dark:border-stone-800 scale-100'
                   }`}></div>
 
                 {isConnected && !isMuted && (
@@ -225,7 +229,7 @@ const MainApp: React.FC = () => {
               {isConnected && (
                 <button
                   onClick={handleDisconnect}
-                  className="w-12 h-12 rounded-full bg-red-950/20 border border-red-900/30 flex items-center justify-center text-red-500 hover:bg-red-900/40 transition-all absolute right-8 lg:static lg:ml-0"
+                  className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 flex items-center justify-center text-red-500 hover:bg-red-200 dark:hover:bg-red-900/40 transition-all absolute right-8 lg:static lg:ml-0"
                   title="End Session"
                 >
                   <PhoneOff size={20} />
@@ -236,36 +240,36 @@ const MainApp: React.FC = () => {
             <p className="mt-6 text-xs font-medium tracking-wide transition-colors">
               {!isConnected && !errorMsg && <span className="text-stone-500">Tap to start booking</span>}
               {errorMsg && <span className="text-red-500">System Offline</span>}
-              {isConnected && !isMuted && <span className="text-amber-500 animate-pulse">Listening... Tap to mute</span>}
+              {isConnected && !isMuted && <span className="text-amber-600 dark:text-amber-500 animate-pulse">Listening... Tap to mute</span>}
               {isConnected && isMuted && <span className="text-stone-500">Mic Off. Processing...</span>}
             </p>
           </div>
         </section>
 
         {/* Right Panel: Bookings */}
-        <section className="w-full lg:w-[420px] bg-[#0f0d0c] flex flex-col border-l border-[#2a2725] overflow-hidden shadow-2xl z-30">
-          <div className="p-6 border-b border-[#2a2725] flex justify-between items-center">
-            <h2 className="text-xl font-serif text-amber-500/90 flex items-center gap-3">
+        <section className="w-full lg:w-[420px] bg-stone-100 dark:bg-[#0f0d0c] flex flex-col border-l border-stone-200 dark:border-[#2a2725] overflow-hidden shadow-2xl z-30 transition-colors duration-300">
+          <div className="p-6 border-b border-stone-200 dark:border-[#2a2725] flex justify-between items-center bg-stone-100 dark:bg-[#0f0d0c]">
+            <h2 className="text-xl font-serif text-amber-700 dark:text-amber-500/90 flex items-center gap-3">
               <Calendar className="w-5 h-5 text-amber-600" />
               Your Bookings
             </h2>
             <button
               onClick={fetchBookings}
-              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-800 text-stone-500 hover:text-amber-500 transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-200 dark:hover:bg-stone-800 text-stone-500 hover:text-amber-600 dark:hover:text-amber-500 transition-colors"
               title="Refresh Bookings"
             >
               <RefreshCw size={14} />
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-[#0f0d0c]">
+          <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-stone-50 dark:bg-[#0f0d0c]">
             <div className="mb-10">
-              <h3 className="text-[10px] font-bold text-stone-600 uppercase tracking-[0.2em] mb-6">
+              <h3 className="text-[10px] font-bold text-stone-500 dark:text-stone-600 uppercase tracking-[0.2em] mb-6">
                 Upcoming ({upcomingBookings.length})
               </h3>
               {upcomingBookings.length === 0 ? (
-                <div className="text-center py-12 border border-dashed border-[#2a2725] rounded-xl bg-stone-900/20">
-                  <p className="text-stone-600 text-xs">No upcoming reservations.</p>
+                <div className="text-center py-12 border border-dashed border-stone-300 dark:border-[#2a2725] rounded-xl bg-stone-200/50 dark:bg-stone-900/20">
+                  <p className="text-stone-500 dark:text-stone-600 text-xs">No upcoming reservations.</p>
                 </div>
               ) : (
                 upcomingBookings.map(b => (
@@ -276,7 +280,7 @@ const MainApp: React.FC = () => {
 
             {pastBookings.length > 0 && (
               <div>
-                <h3 className="text-[10px] font-bold text-stone-600 uppercase tracking-[0.2em] mb-6">
+                <h3 className="text-[10px] font-bold text-stone-500 dark:text-stone-600 uppercase tracking-[0.2em] mb-6">
                   Past & Cancelled ({pastBookings.length})
                 </h3>
                 <div className="space-y-4 opacity-70 hover:opacity-100 transition-opacity duration-300">
@@ -291,8 +295,8 @@ const MainApp: React.FC = () => {
 
       </main>
 
-      <footer className="py-3 text-center text-[10px] text-stone-600 bg-[#0c0a09] border-t border-[#2a2725]">
-        <p>Powered by AI</p>
+      <footer className="py-3 text-center text-[10px] text-stone-500 dark:text-stone-600 bg-white dark:bg-[#0c0a09] border-t border-stone-200 dark:border-[#2a2725] transition-colors duration-300">
+        <p>Powered by AI • Built for Vaiu Software Developer Internship</p>
       </footer>
     </div>
   );
@@ -303,7 +307,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0c0a09] flex items-center justify-center">
+      <div className="min-h-screen bg-stone-50 dark:bg-[#0c0a09] flex items-center justify-center">
         <Loader2 className="text-amber-500 animate-spin" size={40} />
       </div>
     );
@@ -319,18 +323,20 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 const App: React.FC = () => {
   return (
     <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <MainApp />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
+      <ThemeProvider>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <MainApp />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </ThemeProvider>
     </Router>
   );
 };

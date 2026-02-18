@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { UtensilsCrossed, Mail, Lock, User, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
 
+import { ThemeToggle } from '../components/ThemeToggle';
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const Signup: React.FC = () => {
@@ -32,18 +34,21 @@ const Signup: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#0c0a09] flex flex-col items-center justify-center p-4 overflow-y-auto">
-            <div className="w-full max-w-md bg-[#0f0d0c] border border-[#2a2725] rounded-2xl p-8 shadow-2xl">
+        <div className="min-h-screen bg-stone-50 dark:bg-[#0c0a09] flex flex-col items-center justify-center p-4 overflow-y-auto transition-colors duration-300 relative">
+            <div className="absolute top-4 right-4">
+                <ThemeToggle />
+            </div>
+            <div className="w-full max-w-md bg-white dark:bg-[#0f0d0c] border border-stone-200 dark:border-[#2a2725] rounded-2xl p-8 shadow-2xl">
                 <div className="flex flex-col items-center mb-10">
                     <div className="w-16 h-16 bg-amber-500 rounded-2xl flex items-center justify-center text-[#0c0a09] shadow-[0_0_20px_rgba(245,158,11,0.2)] mb-6">
                         <UtensilsCrossed size={32} strokeWidth={2.5} />
                     </div>
-                    <h1 className="text-3xl font-serif text-amber-500 font-medium tracking-wide">Join The Table</h1>
+                    <h1 className="text-3xl font-serif text-amber-600 dark:text-amber-500 font-medium tracking-wide">Join The Table</h1>
                     <p className="text-stone-500 text-sm mt-2">Create your account for personalized dining</p>
                 </div>
 
                 {error && (
-                    <div className="bg-red-950/20 border border-red-900/50 text-red-400 p-4 rounded-xl mb-6 flex items-center gap-3 text-sm">
+                    <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 p-4 rounded-xl mb-6 flex items-center gap-3 text-sm">
                         <AlertCircle size={18} />
                         {error}
                     </div>
@@ -53,7 +58,7 @@ const Signup: React.FC = () => {
                     <div className="space-y-2">
                         <label className="text-xs font-bold text-stone-600 uppercase tracking-widest ml-1">Full Name</label>
                         <div className="relative">
-                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-500">
+                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 dark:text-stone-500">
                                 <User size={18} />
                             </div>
                             <input
@@ -61,7 +66,7 @@ const Signup: React.FC = () => {
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 required
-                                className="w-full bg-[#1c1917] border border-[#2a2725] rounded-xl py-4 pl-12 pr-4 text-stone-200 focus:outline-none focus:border-amber-500/50 transition-colors text-sm"
+                                className="w-full bg-stone-50 dark:bg-[#1c1917] border border-stone-200 dark:border-[#2a2725] rounded-xl py-4 pl-12 pr-4 text-stone-800 dark:text-stone-200 focus:outline-none focus:border-amber-500/50 transition-colors text-sm"
                                 placeholder="Auguste Escoffier"
                             />
                         </div>
@@ -70,7 +75,7 @@ const Signup: React.FC = () => {
                     <div className="space-y-2">
                         <label className="text-xs font-bold text-stone-600 uppercase tracking-widest ml-1">Email Address</label>
                         <div className="relative">
-                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-500">
+                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 dark:text-stone-500">
                                 <Mail size={18} />
                             </div>
                             <input
@@ -78,7 +83,7 @@ const Signup: React.FC = () => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
-                                className="w-full bg-[#1c1917] border border-[#2a2725] rounded-xl py-4 pl-12 pr-4 text-stone-200 focus:outline-none focus:border-amber-500/50 transition-colors text-sm"
+                                className="w-full bg-stone-50 dark:bg-[#1c1917] border border-stone-200 dark:border-[#2a2725] rounded-xl py-4 pl-12 pr-4 text-stone-800 dark:text-stone-200 focus:outline-none focus:border-amber-500/50 transition-colors text-sm"
                                 placeholder="chef@goldentable.com"
                             />
                         </div>
@@ -87,7 +92,7 @@ const Signup: React.FC = () => {
                     <div className="space-y-2">
                         <label className="text-xs font-bold text-stone-600 uppercase tracking-widest ml-1">Password</label>
                         <div className="relative">
-                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-500">
+                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 dark:text-stone-500">
                                 <Lock size={18} />
                             </div>
                             <input
@@ -95,13 +100,13 @@ const Signup: React.FC = () => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
-                                className="w-full bg-[#1c1917] border border-[#2a2725] rounded-xl py-4 pl-12 pr-12 text-stone-200 focus:outline-none focus:border-amber-500/50 transition-colors text-sm"
+                                className="w-full bg-stone-50 dark:bg-[#1c1917] border border-stone-200 dark:border-[#2a2725] rounded-xl py-4 pl-12 pr-12 text-stone-800 dark:text-stone-200 focus:outline-none focus:border-amber-500/50 transition-colors text-sm"
                                 placeholder="••••••••"
                             />
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-500 hover:text-amber-500 transition-colors"
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-amber-500 dark:text-stone-500 transition-colors"
                             >
                                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>
@@ -120,7 +125,7 @@ const Signup: React.FC = () => {
                 <div className="mt-10 text-center">
                     <p className="text-stone-500 text-sm">
                         Already have an account?{' '}
-                        <Link to="/login" className="text-amber-500 hover:text-amber-400 font-medium">
+                        <Link to="/login" className="text-amber-600 dark:text-amber-500 hover:text-amber-500 dark:hover:text-amber-400 font-medium">
                             Sign in
                         </Link>
                     </p>
