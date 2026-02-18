@@ -127,10 +127,6 @@ const Signup: React.FC = () => {
                     </p>
                 </div>
             </div>
-
-            <p className="mt-8 text-stone-600 text-[10px] uppercase tracking-[0.2em]">
-                Fine Dining • AI Powered • Secured
-            </p>
         </div>
     );
 };
