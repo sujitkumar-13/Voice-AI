@@ -141,7 +141,7 @@ const MainApp: React.FC = () => {
 
         <div className="flex items-center gap-6">
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden lg:flex items-center gap-6">
             <ThemeToggle />
 
             <div className="flex items-center gap-2 text-stone-500 dark:text-stone-400 text-xs bg-stone-100 dark:bg-stone-900/50 border border-stone-200 dark:border-stone-800 px-4 py-2 rounded-full">
@@ -162,7 +162,7 @@ const MainApp: React.FC = () => {
           </div>
 
           {/* Mobile Hamburger (Right Side) */}
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <button onClick={toggleMobileMenu} className="p-2 text-stone-600 dark:text-stone-400">
               <div className="space-y-1.5">
                 <span className={`block w-6 h-0.5 bg-current transition-transform ${isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
@@ -176,7 +176,7 @@ const MainApp: React.FC = () => {
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-stone-50 dark:bg-[#0c0a09] pt-24 px-6 md:hidden flex flex-col gap-6">
+        <div className="fixed inset-0 z-40 bg-stone-50 dark:bg-[#0c0a09] pt-24 px-6 lg:hidden flex flex-col gap-6">
           <button
             onClick={() => handleMobileNav('chat')}
             className={`flex items-center gap-4 text-lg font-serif p-4 rounded-xl border transition-colors ${mobileView === 'chat' ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-500' : 'border-stone-200 dark:border-[#2a2725] text-stone-600 dark:text-stone-400'}`}
@@ -240,7 +240,7 @@ const MainApp: React.FC = () => {
                   }`}>
                   {msg.role === 'assistant' ? <UtensilsCrossed size={16} /> : <div className="text-[10px] font-bold">YOU</div>}
                 </div>
-                <div className={`max-w-[85%] lg:max-w-[70%] rounded-2xl p-4 md:p-5 text-sm leading-6 md:leading-7 shadow-sm ${msg.role === 'assistant'
+                <div className={`max-w-[85%] md:max-w-[75%] lg:max-w-[70%] rounded-2xl p-4 md:p-5 text-sm leading-6 md:leading-7 shadow-sm ${msg.role === 'assistant'
                   ? 'bg-white dark:bg-[#1c1917] border border-stone-200 dark:border-[#2a2725] text-stone-700 dark:text-stone-300'
                   : 'bg-stone-200 dark:bg-[#2a2725] text-stone-800 dark:text-stone-200'
                   }`}>
